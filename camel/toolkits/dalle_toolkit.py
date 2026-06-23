@@ -19,13 +19,17 @@ import base64
 import os
 import uuid
 from io import BytesIO
-from typing import List, Optional
+from typing import TYPE_CHECKING, List, Optional
 
-from openai import OpenAI
-from PIL import Image
+# Defer heavy and package-level imports to runtime/type-checking to avoid
+# circular imports and make the module importable under minimal dependencies.
+if TYPE_CHECKING:
+    from openai import OpenAI
+    from PIL import Image
+
+    from camel.toolkits import FunctionTool
 
 from camel.logger import get_logger
-from camel.toolkits import FunctionTool
 from camel.toolkits.base import BaseToolkit
 from camel.utils import MCPServer
 

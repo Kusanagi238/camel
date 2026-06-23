@@ -13,6 +13,10 @@
 # ========= Copyright 2023-2024 @ CAMEL-AI.org. All Rights Reserved. =========
 from __future__ import annotations
 
+# Delay importing utilities that can trigger circular imports by lazily
+# loading them at first use. This avoids importing toolkit modules at
+# module import time which can cause circular import issues.
+import importlib
 import json
 import logging
 import textwrap
@@ -41,13 +45,55 @@ from openai import (
 from pydantic import BaseModel, ValidationError
 
 from camel.agents._types import ModelResponse, ToolCallRequest
-from camel.agents._utils import (
-    convert_to_function_tool,
-    convert_to_schema,
-    get_info_dict,
-    handle_logprobs,
-    safe_model_dump,
-)
+
+if TYPE_CHECKING:
+    # For type checkers only, import names normally
+    from camel.agents._utils import (
+        convert_to_function_tool,
+        convert_to_schema,
+        get_info_dict,
+        handle_logprobs,
+        safe_model_dump,
+    )
+    from camel.toolkits import FunctionTool  # type: ignore
+
+
+def _lazy_get_agents_utils():
+    return importlib.import_module("camel.agents._utils")
+
+
+def convert_to_function_tool(*args, **kwargs):
+    return _lazy_get_agents_utils().convert_to_function_tool(*args, **kwargs)
+
+
+def convert_to_schema(*args, **kwargs):
+    return _lazy_get_agents_utils().convert_to_schema(*args, **kwargs)
+
+
+def get_info_dict(*args, **kwargs):
+    return _lazy_get_agents_utils().get_info_dict(*args, **kwargs)
+
+
+def handle_logprobs(*args, **kwargs):
+    return _lazy_get_agents_utils().handle_logprobs(*args, **kwargs)
+
+
+def safe_model_dump(*args, **kwargs):
+    return _lazy_get_agents_utils().safe_model_dump(*args, **kwargs)
+
+
+def _load_toolkits_and_replace_FunctionTool():
+    mod = importlib.import_module("camel.toolkits")
+    # Replace the global FunctionTool with the real class for future uses
+    globals()["FunctionTool"] = mod.FunctionTool
+    return globals()["FunctionTool"]
+
+
+def FunctionTool(*args, **kwargs):
+    cls = _load_toolkits_and_replace_FunctionTool()
+    return cls(*args, **kwargs)
+
+
 from camel.agents.base import BaseAgent
 from camel.memories import (
     AgentMemory,
@@ -65,7 +111,6 @@ from camel.models import (
 from camel.prompts import TextPrompt
 from camel.responses import ChatAgentResponse
 from camel.storages import JsonStorage
-from camel.toolkits import FunctionTool
 from camel.types import (
     ChatCompletion,
     ChatCompletionChunk,

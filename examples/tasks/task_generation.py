@@ -12,7 +12,6 @@
 # limitations under the License.
 # ========= Copyright 2023-2024 @ CAMEL-AI.org. All Rights Reserved. =========
 
-from camel.agents import ChatAgent
 from camel.configs import ChatGPTConfig
 from camel.models import ModelFactory
 from camel.tasks import (
@@ -25,40 +24,43 @@ from camel.types import (
 )
 
 # set up LLM model
-assistant_model_config = ChatGPTConfig(
-    temperature=0.0,
-)
+if __name__ == "__main__":
+    from camel.agents import ChatAgent
 
-model = ModelFactory.create(
-    model_platform=ModelPlatformType.DEFAULT,
-    model_type=ModelType.DEFAULT,
-    model_config_dict=assistant_model_config.as_dict(),
-)
+    assistant_model_config = ChatGPTConfig(
+        temperature=0.0,
+    )
 
-# set up agent
-assistant_sys_msg = "You are a personal math tutor and programmer."
-agent = ChatAgent(assistant_sys_msg, model)
-agent.reset()
+    model = ModelFactory.create(
+        model_platform=ModelPlatformType.DEFAULT,
+        model_type=ModelType.DEFAULT,
+        model_config_dict=assistant_model_config.as_dict(),
+    )
 
-task = Task(
-    content="Weng earns $12 an hour for babysitting. Yesterday, she just did 51 minutes of babysitting. How much did she earn?",
-    id="0",
-)
-print(task.to_string())
+    # set up agent
+    assistant_sys_msg = "You are a personal math tutor and programmer."
+    agent = ChatAgent(assistant_sys_msg, model)
+    agent.reset()
+
+    task = Task(
+        content="Weng earns $12 an hour for babysitting. Yesterday, she just did 51 minutes of babysitting. How much did she earn?",
+        id="0",
+    )
+    print(task.to_string())
+
+    
+    task_manager = TaskManager(task)
+
+    evolved_task = task_manager.evolve(task, agent=agent)
+    if evolved_task is not None:
+        print(evolved_task.to_string())
+    else:
+        print("Evolved task is None.")
 
 
-task_manager = TaskManager(task)
-
-evolved_task = task_manager.evolve(task, agent=agent)
-if evolved_task is not None:
-    print(evolved_task.to_string())
-else:
-    print("Evolved task is None.")
-
-
-new_tasks = task.decompose(agent=agent)
-for t in new_tasks:
-    print(t.to_string())
+    new_tasks = task.decompose(agent=agent)
+    for t in new_tasks:
+        print(t.to_string())
 
 # ruff: noqa: E501
 """

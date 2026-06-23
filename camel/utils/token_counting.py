@@ -15,21 +15,42 @@
 from __future__ import annotations
 
 import base64
+import logging
 from abc import ABC, abstractmethod
 from io import BytesIO
 from math import ceil
 from typing import TYPE_CHECKING, List, Optional
 
-from PIL import Image
+# PIL may not be installed in minimal-deps environments; import lazily/fail gracefully
+try:
+    from PIL import Image
+except Exception:
+    Image = None
 
-from camel.logger import get_logger
-from camel.types import (
-    ModelType,
-    OpenAIImageType,
-    OpenAIVisionDetailType,
-    UnifiedModelType,
-)
-from camel.utils import dependencies_required
+# Import types and logger for type checking only to avoid import-time cycles
+if TYPE_CHECKING:
+    from camel.logger import get_logger
+    from camel.types import (
+        ModelType,
+        OpenAIImageType,
+        OpenAIVisionDetailType,
+        UnifiedModelType,
+    )
+
+# dependencies_required may not be available in minimal environments or may cause import cycles
+# Provide a no-op fallback if the import fails
+try:
+    from camel.utils import dependencies_required
+except Exception:
+    def dependencies_required(func):
+        return func
+
+# Try to import the package logger for runtime; fall back to standard logging if unavailable
+try:
+    from camel.logger import get_logger
+except Exception:
+    def get_logger(name: str = __name__):
+        return logging.getLogger(name)
 
 if TYPE_CHECKING:
     from mistral_common.protocol.instruct.request import (  # type:ignore[import-not-found]

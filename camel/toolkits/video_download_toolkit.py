@@ -24,9 +24,10 @@ from urllib.parse import urlparse
 from PIL import Image
 
 from camel.logger import get_logger
-from camel.toolkits.base import BaseToolkit
-from camel.toolkits.function_tool import FunctionTool
 from camel.utils import MCPServer, dependencies_required
+
+from .base import BaseToolkit
+from .function_tool import FunctionTool
 
 logger = get_logger(__name__)
 

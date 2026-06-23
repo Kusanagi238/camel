@@ -19,21 +19,38 @@ import io
 import os
 import tempfile
 from pathlib import Path
-from typing import List, Optional
+from typing import TYPE_CHECKING, List, Optional
 
 from PIL import Image
 
 from camel.logger import get_logger
 from camel.messages import BaseMessage
 from camel.models import BaseModelBackend, OpenAIAudioModels
-from camel.toolkits.base import BaseToolkit
-from camel.toolkits.function_tool import FunctionTool
+
+# Avoid importing other toolkits at module import time to prevent circular imports.
+# Use TYPE_CHECKING so static type checkers can still see the real classes.
 from camel.utils import MCPServer, dependencies_required
 
-from .video_download_toolkit import (
-    VideoDownloaderToolkit,
-    _capture_screenshot,
-)
+if TYPE_CHECKING:
+    from camel.toolkits.base import BaseToolkit
+    from camel.toolkits.function_tool import FunctionTool
+
+    from .video_download_toolkit import (
+        VideoDownloaderToolkit,
+        _capture_screenshot,
+    )
+else:
+    # Runtime placeholders to avoid importing the entire camel.toolkits package
+    BaseToolkit = object
+    FunctionTool = object
+    VideoDownloaderToolkit = None
+
+    def _capture_screenshot(*args, **kwargs):
+        raise RuntimeError(
+            "video_download_toolkit is not imported at module import time. "
+            "Import it locally before calling _capture_screenshot."
+        )
+
 
 logger = get_logger(__name__)
 

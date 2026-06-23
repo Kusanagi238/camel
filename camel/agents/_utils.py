@@ -15,10 +15,17 @@ import json
 import logging
 import re
 import textwrap
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
 from camel.agents._types import ToolCallRequest
-from camel.toolkits import FunctionTool
+
+# Defer importing FunctionTool at runtime to avoid circular imports during package import.
+# Use TYPE_CHECKING so static type checkers still see the import but runtime won't import it here.
+if TYPE_CHECKING:
+    from camel.toolkits import FunctionTool  # pragma: no cover
+else:
+    FunctionTool = None  # type: ignore
+
 from camel.types import Choice
 from camel.types.agents import ToolCallingRecord
 

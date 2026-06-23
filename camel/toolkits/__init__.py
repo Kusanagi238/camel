@@ -58,8 +58,20 @@ from .excel_toolkit import ExcelToolkit
 from .video_analysis_toolkit import VideoAnalysisToolkit
 from .image_analysis_toolkit import ImageAnalysisToolkit
 from .mcp_toolkit import MCPToolkit
-from .browser_toolkit import BrowserToolkit
-from .async_browser_toolkit import AsyncBrowserToolkit
+import importlib as _importlib
+
+
+# Lazy-import browser-related toolkits to avoid triggering circular imports
+def __getattr__(name):
+    if name == "BrowserToolkit":
+        mod = _importlib.import_module(".browser_toolkit", __name__)
+        return mod.BrowserToolkit
+    if name == "AsyncBrowserToolkit":
+        mod = _importlib.import_module(".async_browser_toolkit", __name__)
+        return mod.AsyncBrowserToolkit
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
 from .file_write_toolkit import FileWriteToolkit
 from .terminal_toolkit import TerminalToolkit
 from .pubmed_toolkit import PubMedToolkit

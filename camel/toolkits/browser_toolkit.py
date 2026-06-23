@@ -26,6 +26,7 @@ import time
 import urllib.parse
 from copy import deepcopy
 from typing import (
+    TYPE_CHECKING,
     Any,
     BinaryIO,
     Dict,
@@ -40,12 +41,16 @@ from typing import (
 
 from PIL import Image, ImageDraw, ImageFont
 
-from camel.agents import ChatAgent
+if TYPE_CHECKING:
+    # Defer imports that can create circular dependencies at runtime.
+    # These are used for type checking only.
+    from camel.agents import ChatAgent
+    from camel.toolkits.function_tool import FunctionTool
+
 from camel.logger import get_logger
 from camel.messages import BaseMessage
 from camel.models import BaseModelBackend, ModelFactory
 from camel.toolkits.base import BaseToolkit
-from camel.toolkits.function_tool import FunctionTool
 from camel.toolkits.video_analysis_toolkit import VideoAnalysisToolkit
 from camel.types import ModelPlatformType, ModelType
 from camel.utils import (

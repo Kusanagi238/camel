@@ -26,6 +26,7 @@ import shutil
 import urllib.parse
 from copy import deepcopy
 from typing import (
+    TYPE_CHECKING,
     Any,
     BinaryIO,
     Coroutine,
@@ -41,7 +42,10 @@ from typing import (
 
 from PIL import Image, ImageDraw, ImageFont
 
-from camel.agents import ChatAgent
+# Import ChatAgent only for type checking to avoid circular import at runtime.
+if TYPE_CHECKING:
+    from camel.agents import ChatAgent
+
 from camel.logger import get_logger
 from camel.messages import BaseMessage
 from camel.models import BaseModelBackend, ModelFactory
@@ -1336,7 +1340,10 @@ class AsyncBrowserToolkit(BaseToolkit):
         self.output_language = output_language
 
         self.history: list = []
-        self.web_agent, self.planning_agent = self._initialize_agent()
+        # Defer creating ChatAgent instances to avoid importing agents at module import time.
+        # They will be initialized lazily via _initialize_agent() when needed.
+        self.web_agent = None
+        self.planning_agent = None
 
     def _reset(self):
         self.web_agent.reset()

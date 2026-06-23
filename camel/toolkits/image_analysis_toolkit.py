@@ -19,13 +19,15 @@ from io import BytesIO
 from typing import List, Optional
 from urllib.parse import urlparse
 
-import requests
-from PIL import Image
-
+# Defer heavy/optional external imports (requests, PIL) and package-level
+# toolkit imports to runtime to avoid import-time failures in minimal
+# dependency environments and to prevent import-time circular imports.
 from camel.logger import get_logger
 from camel.messages import BaseMessage
 from camel.models import BaseModelBackend, ModelFactory
-from camel.toolkits import FunctionTool
+
+# FunctionTool is imported locally inside get_tools to avoid package-level
+# circular import issues.
 from camel.toolkits.base import BaseToolkit
 from camel.types import ModelPlatformType, ModelType
 from camel.utils import MCPServer
@@ -179,7 +181,14 @@ class ImageAnalysisToolkit(BaseToolkit):
             image = self._load_image(image_path)
             logger.info(f"Analyzing image: {image_path}")
 
-            from camel.agents.chat_agent import ChatAgent
+            # Import ChatAgent locally and guard import errors so that in
+            # minimal or partially-initialized environments we fail gracefully
+            # rather than raising a circular-import ImportError at module init.
+            try:
+                from camel.agents.chat_agent import ChatAgent
+            except Exception as e:
+                logger.error(f"ChatAgent import error: {e}")
+                return f"Image analysis unavailable: {e!s}"
 
             agent = ChatAgent(
                 system_message=system_message,
@@ -196,7 +205,7 @@ class ImageAnalysisToolkit(BaseToolkit):
             agent.reset()
             return response.msgs[0].content
 
-        except (ValueError, requests.exceptions.RequestException) as e:
+        except ValueError as e:
             logger.error(f"Image handling error: {e}")
             return f"Image error: {e!s}"
         except Exception as e:

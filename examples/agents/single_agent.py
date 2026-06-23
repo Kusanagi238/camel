@@ -11,9 +11,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ========= Copyright 2023-2024 @ CAMEL-AI.org. All Rights Reserved. =========
-from camel.agents import ChatAgent
 from camel.prompts import PromptTemplateGenerator
 from camel.types import TaskType
+
+# Defer importing ChatAgent to runtime (e.g., inside main) to avoid circular imports
 
 
 def main(key: str = 'generate_users', num_roles: int = 50, model=None):
