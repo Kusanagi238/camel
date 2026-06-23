@@ -384,6 +384,10 @@ Homepage = "https://www.camel-ai.org/"
 Repository = "https://github.com/camel-ai/camel"
 Documentation = "https://docs.camel-ai.org"
 
+[project.dependency-groups]
+dev = []
+docs = []
+
 [tool.uv]
 default-groups = [
     "dev",
