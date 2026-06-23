@@ -2242,7 +2242,11 @@ class ChatAgent(BaseAgent):
         from mcp.server.fastmcp import FastMCP
 
         # Combine dependencies
-        all_dependencies = ["camel-ai[all]"]
+        # Use the base package "camel-ai" by default to avoid pulling optional
+        # extras (e.g. camel-ai[all]) which may introduce yanked or breaking
+        # transitive dependencies. If the caller explicitly passes extras in
+        # `dependencies`, those will be respected.
+        all_dependencies = ["camel-ai"]
         if dependencies:
             all_dependencies.extend(dependencies)
 
